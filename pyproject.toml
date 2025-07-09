@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "proofer"
+version = "0.1.0"
+description = "A CLI-based agent for proofreading and editing of short-form writing"
+authors = ["joypauls <joypaulsen3@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+langgraph = "^0.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
