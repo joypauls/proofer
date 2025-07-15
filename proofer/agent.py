@@ -58,21 +58,16 @@ def call_openai_node(state: AgentState) -> AgentState:
         original_words = extract_words(original)
         suggested_words = extract_words(suggested)
 
-        print(f"Original words: {original_words}")
-        print(f"Suggested words: {suggested_words}")
-
-        # Since we're now getting the full text back, word counts should match
         if len(original_words) != len(suggested_words):
             print(
                 f"Word count mismatch: {len(original_words)} vs {len(suggested_words)}"
             )
             return False
 
-        # Check if any words are actually different
         has_diffs = any(
             orig != sugg for orig, sugg in zip(original_words, suggested_words)
         )
-        print(f"Has spelling differences: {has_diffs}")
+        # print(f"Has spelling differences: {has_diffs}")
         return has_diffs
 
     has_corrections = has_spelling_corrections(original_text, suggestions)
@@ -114,7 +109,6 @@ def print_diff_node(state: AgentState) -> AgentState:
         original_words = re.findall(r"\b\w+\b", original.lower())
         corrected_words = re.findall(r"\b\w+\b", corrected.lower())
 
-        # find differences using difflib
         changes = []
         matcher = difflib.SequenceMatcher(None, original_words, corrected_words)
 
@@ -137,11 +131,8 @@ def print_diff_node(state: AgentState) -> AgentState:
         console.print("[green]✓ No spelling errors found![/]")
         return state
 
-    # print header
-    console.print(f"\n[bold yellow]📝 Found {len(changes)} spelling correction(s):[/]")
+    console.print(f"\n[bold yellow]Found {len(changes)} spelling correction(s):[/]")
     console.print()
-
-    # print each change with highlighting
     for i, change in enumerate(changes, 1):
         console.print(
             f"  {i}. [red bold]{change['original']}[/] → [green bold]{change['corrected']}[/]"
@@ -153,22 +144,19 @@ def print_diff_node(state: AgentState) -> AgentState:
     original_lines = original_text.splitlines()
     corrected_lines = corrected_text.splitlines()
 
-    console.print("[bold blue]📄 Preview of changes:[/]")
+    console.print("[bold blue]Preview:[/]")
     console.print()
 
     # show only the lines that changed with context
     for i, (orig_line, corr_line) in enumerate(zip(original_lines, corrected_lines), 1):
         if orig_line.strip() != corr_line.strip():
-            # show line number and context
             console.print(f"[dim]Line {i}:[/]")
 
-            # create highlighted versions using Rich Text objects
             orig_text = Text(orig_line)
             corr_text = Text(corr_line)
 
-            # apply highlighting by finding word positions
             for change in changes:
-                # find all occurrences of the word in the line (case-insensitive)
+                # find all occurrences of the word in the line
                 orig_pattern = re.compile(
                     r"\b" + re.escape(change["original"]) + r"\b", re.IGNORECASE
                 )
@@ -222,7 +210,6 @@ def no_corrections_node(state: AgentState) -> AgentState:
 
 
 def route_after_llm(state: AgentState) -> str:
-    """Route to diff processing if corrections exist, otherwise to no_corrections"""
     if state.get("has_corrections", False):
         return "diff"
     else:
