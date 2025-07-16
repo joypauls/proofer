@@ -1,3 +1,4 @@
+import pytest
 from proofer.text_utils import (
     extract_words,
     has_spelling_corrections,
@@ -11,13 +12,9 @@ class TestExtractWords:
         result = extract_words(text)
         assert result == ["hello", "world", "test"]
 
-    def test_extract_words_empty_string(self):
-        result = extract_words("")
-        assert result == []
-
-    def test_extract_words_none_or_whitespace(self):
-        assert extract_words("   ") == []
-        assert extract_words("\n\t") == []
+    @pytest.mark.parametrize("text", ["", "   ", "\n\t"])
+    def test_extract_words_empty_or_whitespace(self, text):
+        assert extract_words(text) == []
 
     def test_extract_words_with_punctuation(self):
         text = "Hello, world! How are you?"
@@ -36,29 +33,22 @@ class TestExtractWords:
 
 
 class TestHasSpellingCorrections:
-    def test_has_corrections_identical_text(self):
-        original = "Hello world"
-        suggested = "Hello world"
-        assert has_spelling_corrections(original, suggested) is False
+    @pytest.mark.parametrize(
+        "original,suggested,expected",
+        [
+            ("Hello world", "Hello world", False),
+            ("HELLO WORLD", "hello world", False),
+            ("Hello wrold", "Hello world", True),
+            ("Helo wrold tset", "Hello world test", True),
+            ("Hello, wrold!", "Hello, world!", True),
+        ],
+    )
+    def test_has_corrections_spelling_scenarios(self, original, suggested, expected):
+        assert has_spelling_corrections(original, suggested) is expected
 
-    def test_has_corrections_spelling_fix(self):
-        original = "Hello wrold"
-        suggested = "Hello world"
-        assert has_spelling_corrections(original, suggested) is True
-
-    def test_has_corrections_empty_suggested(self):
+    @pytest.mark.parametrize("suggested", ["", None, "   "])
+    def test_has_corrections_invalid_suggested(self, suggested):
         original = "Hello world"
-        suggested = ""
-        assert has_spelling_corrections(original, suggested) is False
-
-    def test_has_corrections_none_suggested(self):
-        original = "Hello world"
-        suggested = None
-        assert has_spelling_corrections(original, suggested) is False
-
-    def test_has_corrections_whitespace_only_suggested(self):
-        original = "Hello world"
-        suggested = "   "
         assert has_spelling_corrections(original, suggested) is False
 
     def test_has_corrections_word_count_mismatch(self, capsys):
@@ -69,21 +59,6 @@ class TestHasSpellingCorrections:
         assert result is False
         assert "Word count mismatch: 2 vs 3" in captured.out
 
-    def test_has_corrections_multiple_spelling_fixes(self):
-        original = "Helo wrold tset"
-        suggested = "Hello world test"
-        assert has_spelling_corrections(original, suggested) is True
-
-    def test_has_corrections_case_insensitive(self):
-        original = "HELLO WORLD"
-        suggested = "hello world"
-        assert has_spelling_corrections(original, suggested) is False
-
-    def test_has_corrections_with_punctuation(self):
-        original = "Hello, wrold!"
-        suggested = "Hello, world!"
-        assert has_spelling_corrections(original, suggested) is True
-
 
 class TestNormalizeLineEndings:
     def test_normalize_basic_text(self):
@@ -91,45 +66,44 @@ class TestNormalizeLineEndings:
         result = normalize_line_endings(text)
         assert result == "Hello world\nSecond line"
 
-    def test_normalize_trailing_spaces(self):
-        text = "Hello world   \nSecond line  "
+    @pytest.mark.parametrize(
+        "text,expected",
+        [
+            ("Hello world   \nSecond line  ", "Hello world\nSecond line"),
+            ("Hello world   ", "Hello world"),
+            ("Hello\t  \nWorld   \t", "Hello\nWorld"),
+        ],
+    )
+    def test_normalize_trailing_spaces(self, text, expected):
         result = normalize_line_endings(text)
-        assert result == "Hello world\nSecond line"
+        assert result == expected
 
-    def test_normalize_preserve_final_newline_true(self):
-        text = "Hello world\nSecond line\n"
-        result = normalize_line_endings(text, preserve_final_newline=True)
-        assert result == "Hello world\nSecond line\n"
-
-    def test_normalize_preserve_final_newline_false(self):
-        text = "Hello world\nSecond line\n"
-        result = normalize_line_endings(text, preserve_final_newline=False)
-        assert result == "Hello world\nSecond line"
-
-    def test_normalize_no_final_newline(self):
-        text = "Hello world\nSecond line"
-        result = normalize_line_endings(text, preserve_final_newline=True)
-        assert result == "Hello world\nSecond line"
+    @pytest.mark.parametrize(
+        "text,preserve_final_newline,expected",
+        [
+            ("Hello world\nSecond line\n", True, "Hello world\nSecond line\n"),
+            ("Hello world\nSecond line\n", False, "Hello world\nSecond line"),
+            ("Hello world\nSecond line", True, "Hello world\nSecond line"),
+            ("Hello world\nSecond line", False, "Hello world\nSecond line"),
+        ],
+    )
+    def test_normalize_final_newline_handling(
+        self, text, preserve_final_newline, expected
+    ):
+        result = normalize_line_endings(
+            text, preserve_final_newline=preserve_final_newline
+        )
+        assert result == expected
 
     def test_normalize_empty_string(self):
         text = ""
         result = normalize_line_endings(text)
         assert result == ""
 
-    def test_normalize_single_line_with_trailing_spaces(self):
-        text = "Hello world   "
-        result = normalize_line_endings(text)
-        assert result == "Hello world"
-
     def test_normalize_multiple_trailing_spaces_per_line(self):
         text = "Line one   \nLine two    \nLine three  \n"
         result = normalize_line_endings(text, preserve_final_newline=True)
         assert result == "Line one\nLine two\nLine three\n"
-
-    def test_normalize_tabs_and_spaces(self):
-        text = "Hello\t  \nWorld   \t"
-        result = normalize_line_endings(text)
-        assert result == "Hello\nWorld"
 
     def test_normalize_preserve_internal_whitespace(self):
         text = "Hello   world\nSecond    line  "
