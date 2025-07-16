@@ -1,14 +1,18 @@
 import difflib
-import re
 from pathlib import Path
 from typing import Any
 from rich.console import Console
 from rich.prompt import Confirm
-from rich.text import Text
 from openai import OpenAI
 from langgraph.graph import StateGraph
 
 from proofer.state import AgentState
+from proofer.text_utils import has_spelling_corrections, normalize_line_endings
+from proofer.display import (
+    display_word_changes,
+    display_line_diff,
+)
+from proofer.diff import find_word_changes
 
 client = OpenAI()
 console = Console()
@@ -44,44 +48,10 @@ def call_openai_node(state: AgentState) -> AgentState:
     suggestions = response.choices[0].message.content
     original_text = state["original_text"]
 
-    def extract_words(text: str) -> list[str]:
-        if not text:
-            return []
-
-        words = re.findall(r"\b\w+\b", text.lower())
-        return words
-
-    def has_spelling_corrections(original: str, suggested: str) -> bool:
-        if not suggested or not suggested.strip():
-            return False
-
-        original_words = extract_words(original)
-        suggested_words = extract_words(suggested)
-
-        if len(original_words) != len(suggested_words):
-            print(
-                f"Word count mismatch: {len(original_words)} vs {len(suggested_words)}"
-            )
-            return False
-
-        has_diffs = any(
-            orig != sugg for orig, sugg in zip(original_words, suggested_words)
-        )
-        # print(f"Has spelling differences: {has_diffs}")
-        return has_diffs
-
     has_corrections = has_spelling_corrections(original_text, suggestions)
 
     if has_corrections and suggestions:
-        # remove trailing whitespace from each line to prevent formatting artifacts
-        corrected_lines = []
-        for line in suggestions.splitlines():
-            corrected_lines.append(line.rstrip())
-
-        if original_text.endswith("\n"):
-            suggestions = "\n".join(corrected_lines) + "\n"
-        else:
-            suggestions = "\n".join(corrected_lines)
+        suggestions = normalize_line_endings(suggestions, original_text.endswith("\n"))
 
     if not has_corrections:
         suggestions = ""
@@ -104,81 +74,14 @@ def print_diff_node(state: AgentState) -> AgentState:
     original_text = state["original_text"]
     corrected_text = state["llm_response"]
 
-    def find_word_changes(original: str, corrected: str) -> list[dict[str, str]]:
-        # extract words with their positions
-        original_words = re.findall(r"\b\w+\b", original.lower())
-        corrected_words = re.findall(r"\b\w+\b", corrected.lower())
-
-        changes = []
-        matcher = difflib.SequenceMatcher(None, original_words, corrected_words)
-
-        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag == "replace":
-                for k in range(i2 - i1):
-                    if i1 + k < len(original_words) and j1 + k < len(corrected_words):
-                        orig_word = original_words[i1 + k]
-                        corr_word = corrected_words[j1 + k]
-                        if orig_word != corr_word:
-                            changes.append(
-                                {"original": orig_word, "corrected": corr_word}
-                            )
-
-        return changes
-
     changes = find_word_changes(original_text, corrected_text)
 
     if not changes:
         console.print("[green]✓ No spelling errors found![/]")
         return state
 
-    console.print(f"\n[bold yellow]Found {len(changes)} spelling correction(s):[/]")
-    console.print()
-    for i, change in enumerate(changes, 1):
-        console.print(
-            f"  {i}. [red bold]{change['original']}[/] → [green bold]{change['corrected']}[/]"
-        )
-
-    console.print()
-
-    # print the diff with better formatting
-    original_lines = original_text.splitlines()
-    corrected_lines = corrected_text.splitlines()
-
-    console.print("[bold blue]Preview:[/]")
-    console.print()
-
-    # show only the lines that changed with context
-    for i, (orig_line, corr_line) in enumerate(zip(original_lines, corrected_lines), 1):
-        if orig_line.strip() != corr_line.strip():
-            console.print(f"[dim]Line {i}:[/]")
-
-            orig_text = Text(orig_line)
-            corr_text = Text(corr_line)
-
-            for change in changes:
-                # find all occurrences of the word in the line
-                orig_pattern = re.compile(
-                    r"\b" + re.escape(change["original"]) + r"\b", re.IGNORECASE
-                )
-                corr_pattern = re.compile(
-                    r"\b" + re.escape(change["corrected"]) + r"\b", re.IGNORECASE
-                )
-
-                # find matches in original line
-                for match in orig_pattern.finditer(orig_line):
-                    start, end = match.span()
-                    orig_text.stylize("red bold", start, end)
-
-                # find matches in corrected line
-                for match in corr_pattern.finditer(corr_line):
-                    start, end = match.span()
-                    corr_text.stylize("green bold", start, end)
-
-            console.print("  [red]−[/] ", end="")
-            console.print(orig_text)
-            console.print("  [green]+[/] ", end="")
-            console.print(corr_text)
-            console.print()
+    display_word_changes(console, changes)
+    display_line_diff(console, original_text, corrected_text, changes)
 
     return state
 
