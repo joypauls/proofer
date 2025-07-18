@@ -1,4 +1,4 @@
-.PHONY: install test dev
+.PHONY: install test dev, build, build-check, publish
 
 install:
 	poetry install --with dev
@@ -6,7 +6,14 @@ install:
 test:
 	poetry run pytest
 
-# below are development utilities
-
 dev:
 	poetry run python scripts/dev.py
+
+build:
+	poetry build
+
+build-check: build
+	twine check dist/*
+
+publish: build-check
+	poetry publish

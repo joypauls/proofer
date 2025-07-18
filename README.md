@@ -1,10 +1,11 @@
-# proofer
+[![python](https://img.shields.io/badge/python-3.13-blue)](https://www.python.org)
+[![PyPI version](https://badge.fury.io/py/proofer.svg)](https://badge.fury.io/py/proofer)
 
-**⚠️ This is experimental and a work in progress.**
+# proofer
 
 A minimal, CLI-based agent built with LangGraph for proofreading and editing short-form writing like blog posts. Displays a helpful git-like diff with suggestions and the option to automatically apply changes with backups.
 
-![screenshot](./docs/images/screenshot.png)
+![Usage Screenshot](./docs/images/screenshot.png)
 
 ## User Guide
 
@@ -20,11 +21,31 @@ in your `.zshrc` file or whichever configuration file your setup uses.
 
 ### Install
 
-TODO
+Available on PyPI (i.e. `pip install proofer`)
 
 ### Usage
 
-TODO
+Either pass in the path to a file (works best with markdown or plain text documents)
+
+```
+proofer file.md
+```
+
+or some text directly
+
+```
+proofer -t "Some text with spelking errors"
+```
+
+_Note: The intent of this project is to support short-form writing (<1500 words or so). It will struggle with longer documents, which might be addressed in a future release._
+
+#### Auto-Apply Changes
+
+If you want to live dangerously, you can auto-apply changes identified like so:
+
+```
+proofer file.md --yes
+```
 
 ## Development
 
