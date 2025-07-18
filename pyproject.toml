@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "proofer"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI-based agent for proofreading and editing short-form writing"
 authors = ["joypauls <joypaulsen3@gmail.com>"]
 readme = "README.md"
