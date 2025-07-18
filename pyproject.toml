@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "proofer"
 version = "0.1.0"
-description = "A CLI-based agent for proofreading and editing of short-form writing"
+description = "A CLI-based agent for proofreading and editing short-form writing"
 authors = ["joypauls <joypaulsen3@gmail.com>"]
 readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/joypauls/proofer"
+repository = "https://github.com/joypauls/proofer"
+keywords = ["cli", "spellcheck", "editor", "agent", "openai", "proofreading", "langgraph"]
 
 [tool.poetry.scripts]
 proofer = "proofer.cli:cli"

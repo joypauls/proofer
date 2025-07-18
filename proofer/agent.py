@@ -19,6 +19,9 @@ console = Console()
 
 
 def load_file_node(state: AgentState) -> AgentState:
+    if state.get("input_text"):
+        return {**state, "original_text": state["input_text"]}
+
     path = state["path"]
     text = Path(path).read_text(encoding="utf-8")
     return {**state, "original_text": text}
@@ -87,7 +90,8 @@ def print_diff_node(state: AgentState) -> AgentState:
 
 
 def approve_changes_node(state: AgentState) -> AgentState:
-    approve = state.get("auto_approve") or Confirm.ask(
+    auto_approve = state.get("auto_approve") or state.get("input_text") is not None
+    approve = auto_approve or Confirm.ask(
         "Do you want to accept and save the suggested changes?"
     )
     return {**state, "approved": approve}
@@ -95,13 +99,17 @@ def approve_changes_node(state: AgentState) -> AgentState:
 
 def write_file_node(state: AgentState) -> AgentState:
     if state.get("approved"):
-        path = Path(state["path"])
-        backup_path = path.with_suffix(".bak.mdx")
-        path.rename(backup_path)
-        Path(path).write_text(state["corrected_text"], encoding="utf-8")
-        console.print(
-            f"[green]Updated file saved. Original backed up to {backup_path}[/]"
-        )
+        if state.get("path"):
+            path = Path(state["path"])
+            backup_path = path.with_suffix(".bak.mdx")
+            path.rename(backup_path)
+            Path(path).write_text(state["corrected_text"], encoding="utf-8")
+            console.print(
+                f"[green]Updated file saved. Original backed up to {backup_path}[/]"
+            )
+        else:
+            console.print("[green]Corrected text:[/]")
+            console.print(state["corrected_text"])
     else:
         console.print("[yellow]No changes were made.[/]")
     return state

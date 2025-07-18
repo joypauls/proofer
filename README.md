@@ -2,7 +2,7 @@
 
 **⚠️ This is experimental and a work in progress.**
 
-A very simple CLI-based agent built with LangGraph for proofreading and editing short-form writing like blog posts. Displays a helpful git-like diff with suggestions and the option to automatically apply changes with backups.
+A minimal, CLI-based agent built with LangGraph for proofreading and editing short-form writing like blog posts. Displays a helpful git-like diff with suggestions and the option to automatically apply changes with backups.
 
 ![screenshot](./docs/images/screenshot.png)
 
@@ -10,7 +10,7 @@ A very simple CLI-based agent built with LangGraph for proofreading and editing 
 
 ### OpenAI API Key
 
-You'll need to set the `OPENAI_API_KEY` environment variable. An easy way to do this is to put this line:
+For most tasks this library uses OpenAI API's so you'll need to set the `OPENAI_API_KEY` environment variable. An easy way to do this is to put this line:
 
 ```
 export OPENAI_API_KEY=<your key>
