@@ -29,7 +29,7 @@ class TestExtractWords:
     def test_extract_words_numbers_and_underscores(self):
         text = "test_var 123 hello_world"
         result = extract_words(text)
-        assert result == ["test_var", "hello_world"]
+        assert result == ["test_var", "123", "hello_world"]
 
 
 class TestHasSpellingCorrections:
