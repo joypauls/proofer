@@ -9,7 +9,7 @@ from proofer.state import AgentState
 @click.option(
     "--yes", is_flag=True, help="Automatically approve and apply suggested changes."
 )
-def main(file_path, yes):
+def cli(file_path, yes):
     graph = build_graph()
     initial_state: AgentState = {"path": str(file_path), "auto_approve": yes}
     graph.invoke(initial_state)

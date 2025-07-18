@@ -5,6 +5,9 @@ description = "A CLI-based agent for proofreading and editing of short-form writ
 authors = ["joypauls <joypaulsen3@gmail.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+proofer = "proofer.cli:cli"
+
 [tool.poetry.dependencies]
 python = "^3.13"
 langgraph = "^0.5.1"

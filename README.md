@@ -2,7 +2,7 @@
 
 **⚠️ This is experimental and a work in progress.**
 
-A very simple CLI-based agent for proofreading and editing short-form writing like blog posts. Displays a helpful git-like diff with suggestions and the option to automatically apply changes with backups.
+A very simple CLI-based agent built with LangGraph for proofreading and editing short-form writing like blog posts. Displays a helpful git-like diff with suggestions and the option to automatically apply changes with backups.
 
 ![screenshot](./docs/images/screenshot.png)
 
@@ -31,3 +31,8 @@ TODO
 This project currently requires Python 3.13 ([pyenv](https://realpython.com/intro-to-pyenv/) is recommended) and uses Poetry as the dependency manager and packaging tool.
 
 For now, checkout the `Makefile` as a guide.
+
+| Command      | Description              |
+| ------------ | ------------------------ |
+| make install | Install all dependencies |
+| make test    | Run unit tests           |
