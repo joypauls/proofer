@@ -1,9 +1,7 @@
 import difflib
 from pathlib import Path
 from typing import Any
-from rich.console import Console
 from rich.prompt import Confirm
-from openai import OpenAI
 from langgraph.graph import StateGraph
 
 from proofer.state import AgentState
@@ -13,9 +11,7 @@ from proofer.display import (
     display_line_diff,
 )
 from proofer.diff import find_word_changes
-
-client = OpenAI()
-console = Console()
+from proofer.config import client, console
 
 
 def load_file_node(state: AgentState) -> AgentState:
