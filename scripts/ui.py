@@ -100,9 +100,13 @@ def display_line_diff_streamlit(original_text, corrected_text, changes):
 
 
 def process_text_with_agent(text, auto_approve=False):
-    """Process text through the proofreader agent and return results."""
+    """Process text and return results."""
     try:
-        initial_state = {"input_text": text, "auto_approve": auto_approve}
+        initial_state = {
+            "headless_mode": True,
+            "input_text": text,
+            "auto_approve": auto_approve,
+        }
 
         graph = build_graph()
         result = graph.invoke(initial_state)

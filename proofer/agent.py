@@ -70,6 +70,10 @@ def compute_diff_node(state: AgentState) -> AgentState:
 
 
 def print_diff_node(state: AgentState) -> AgentState:
+    # skip printing to console in headless mode
+    if state.get("headless_mode"):
+        return state
+
     original_text = state["original_text"]
     corrected_text = state["llm_response"]
 
@@ -103,9 +107,6 @@ def write_file_node(state: AgentState) -> AgentState:
             console.print(
                 f"[green]Updated file saved. Original backed up to {backup_path}[/]"
             )
-        else:
-            console.print("[green]Corrected text:[/]")
-            console.print(state["corrected_text"])
     else:
         console.print("[yellow]No changes were made.[/]")
     return state
