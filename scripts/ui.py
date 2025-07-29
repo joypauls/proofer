@@ -114,7 +114,7 @@ def process_text_with_agent(text, auto_approve=False):
 
 
 def main():
-    st.set_page_config(page_title="Proofreader Agent", page_icon="📝", layout="wide")
+    st.set_page_config(page_title="Proofer", page_icon="📝", layout="wide")
 
     st.title("Proofer")
 
@@ -130,9 +130,8 @@ def main():
     text_to_process = ""
 
     if input_method == "Direct text input":
-        st.subheader("Enter text to proofread:")
         text_to_process = st.text_area(
-            "Text input", height=200, placeholder="Paste your text here..."
+            "Text input", height=200, placeholder="Paste your text here"
         )
     else:
         st.subheader("Upload a file:")
@@ -154,7 +153,6 @@ def main():
     if st.button(
         "Check",
         type="primary",
-        disabled=not text_to_process.strip(),
     ):
         if not text_to_process.strip():
             st.warning("Please enter some text to proofread.")
@@ -182,7 +180,6 @@ def main():
                 st.subheader("Detailed Preview:")
                 display_line_diff_streamlit(original_text, corrected_text, changes)
 
-                # Show full corrected text
                 with st.expander("View Full Corrected Text", expanded=False):
                     st.text_area(
                         "Corrected version:", corrected_text, height=300, disabled=True
