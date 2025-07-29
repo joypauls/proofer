@@ -1,4 +1,4 @@
-.PHONY: install test dev, build, build-check, publish
+.PHONY: install test dev ui build build-check publish
 
 install:
 	poetry install --with dev
@@ -8,6 +8,9 @@ test:
 
 dev:
 	poetry run python scripts/dev.py
+
+ui:
+	poetry run streamlit run scripts/ui.py
 
 build:
 	poetry build

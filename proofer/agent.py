@@ -1,9 +1,7 @@
 import difflib
 from pathlib import Path
 from typing import Any
-from rich.console import Console
 from rich.prompt import Confirm
-from openai import OpenAI
 from langgraph.graph import StateGraph
 
 from proofer.state import AgentState
@@ -13,9 +11,7 @@ from proofer.display import (
     display_line_diff,
 )
 from proofer.diff import find_word_changes
-
-client = OpenAI()
-console = Console()
+from proofer.config import client, console
 
 
 def load_file_node(state: AgentState) -> AgentState:
@@ -74,6 +70,10 @@ def compute_diff_node(state: AgentState) -> AgentState:
 
 
 def print_diff_node(state: AgentState) -> AgentState:
+    # skip printing to console in headless mode
+    if state.get("headless_mode"):
+        return state
+
     original_text = state["original_text"]
     corrected_text = state["llm_response"]
 
@@ -107,9 +107,6 @@ def write_file_node(state: AgentState) -> AgentState:
             console.print(
                 f"[green]Updated file saved. Original backed up to {backup_path}[/]"
             )
-        else:
-            console.print("[green]Corrected text:[/]")
-            console.print(state["corrected_text"])
     else:
         console.print("[yellow]No changes were made.[/]")
     return state

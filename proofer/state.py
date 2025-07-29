@@ -11,3 +11,4 @@ class AgentState(TypedDict, total=False):
     approved: bool
     auto_approve: bool
     has_corrections: bool
+    headless_mode: bool
